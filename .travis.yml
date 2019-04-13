@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t samazad/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run samazad/react-test npm run test -- --coverage
+
+after_success:
+  - docker build -t samazad/multi-client ./client
+  - docker build -t samazad/multi-nginx ./nginx
+  - docker build -t samazad/multi-server ./server
+  - docker build -t samazad/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push samazad/multi-client
+  - docker push samazad/multi-nginx
+  - docker push samazad/multi-server
+  - docker push samazad/multi-worker
